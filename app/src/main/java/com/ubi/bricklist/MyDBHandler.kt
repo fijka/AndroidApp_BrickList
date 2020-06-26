@@ -1,6 +1,7 @@
 package com.ubi.bricklist
 
 import android.content.Context
+import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
@@ -78,6 +79,12 @@ class MyDBHandler(private val myContext: Context) :
             e.printStackTrace()
         }
     }
+
+    fun query(table: String?, columns: Array<String?>?, selection: String?,
+        selectionArgs: Array<String?>?, groupBy: String?, having: String?, orderBy: String?
+    ): Cursor? { return myDataBase!!.query(
+            "PLEASE CHANGE TO YOUR TABLE NAME", null, null,
+            null, null, null, null) }
 
     companion object {
         private const val DB_NAME = "BrickList"
