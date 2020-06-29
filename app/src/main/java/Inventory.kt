@@ -8,4 +8,11 @@ class Inventory {
         this.id = id
         this.name = name
     }
+
+    constructor(id: Int, name: String, active: Int, lastAccessed: Int) {
+        this.id = id
+        this.name = name
+        this.active = active
+        this.lastAccessed = lastAccessed
+    }
 }

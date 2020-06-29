@@ -1,15 +1,22 @@
 package com.ubi.bricklist
 
+import Inventory
+import InventoryPart
+import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.time.LocalDateTime
+import java.util.*
 
 
 class MyDBHandler(private val myContext: Context) :
@@ -91,7 +98,65 @@ class MyDBHandler(private val myContext: Context) :
     }
 
     init {
-        DB_PATH = "/data/data/" + myContext.packageName + "/" + "databases/"
+        DB_PATH = "/data/data/${myContext.packageName}/databases/"
         Log.e("Path 1", DB_PATH)
+    }
+
+    fun addInventory(inventory: Inventory) {
+        val values = ContentValues()
+        values.put("_id", inventory.id)
+        values.put("Name", inventory.name)
+        values.put("Active", 1)
+        values.put("LastAccessed", Calendar.getInstance().time.time)
+        val db = this.writableDatabase
+        db.insert("Inventories", null, values)
+        db.close()
+    }
+
+    fun addInventoryPart(inventoryPart: InventoryPart) {
+        val values = ContentValues()
+        values.put("InventoryID", inventoryPart.inventoryID)
+        values.put("TypeID", inventoryPart.typeID)
+        values.put("ItemID", inventoryPart.itemID)
+        values.put("QuantityInSet", inventoryPart.quantityInSet)
+        values.put("QuantityInStore", inventoryPart.quantityInStore)
+        values.put("ColorID", inventoryPart.colorID)
+        values.put("Extra", inventoryPart.extra)
+        val db = this.writableDatabase
+        db.insert("InventoriesParts", null, values)
+        db.close()
+    }
+
+    fun findInventories(): MutableList<Inventory> {
+        val db = this.writableDatabase
+        val query = "SELECT * FROM Inventories ORDER BY LastAccessed"
+        val cursor = db.rawQuery(query, null)
+        val inventories: MutableList<Inventory> = mutableListOf()
+
+        if (cursor.moveToFirst()) {
+            do {
+                val inventory = Inventory(cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getInt(3))
+                println("${inventory.id} ${inventory.name} ${inventory.active} ${inventory.lastAccessed}")
+                inventories.add(inventory)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return inventories
+    }
+
+    fun inventoryExist(id: Int): Boolean {
+        var result = false
+        val query = "SELECT * FROM Inventories WHERE _id = $id"
+
+        val db = this.writableDatabase
+        val cursor = db.rawQuery(query, null)
+        if (cursor.moveToFirst()) {
+            cursor.close()
+            result = true
+        }
+
+        db.close()
+        return result
     }
 }
