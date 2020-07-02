@@ -3,10 +3,12 @@ package com.ubi.bricklist
 import Inventory
 import InventoryPart
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.text.Editable
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -19,7 +21,6 @@ import java.io.IOException
 import java.net.URL
 import java.sql.SQLException
 import javax.xml.parsers.DocumentBuilderFactory
-import android.widget.EditText
 
 
 class AddInventoryActivity : AppCompatActivity() {
@@ -43,7 +44,12 @@ class AddInventoryActivity : AppCompatActivity() {
             if (inventoryID.toString().trim().isNotEmpty() && inventoryName.toString().trim().isNotEmpty()) {
                 if (!myDbHelper.inventoryExist(inventoryID.toString().toInt())) {
                     // Download an inventory and add the set to the database
+//                    val progressDialog = ProgressDialog.show(
+//                        this@AddInventoryActivity, "",
+//                        "Downloading. Please wait...", true
+//                    )
                     InventoryDownloader().execute()
+//                    progressDialog.dismiss()
                     Toast.makeText(this, "The $inventoryID is now available",
                         Toast.LENGTH_LONG).show()
                     val intent = Intent(this, MainActivity::class.java)
@@ -110,8 +116,10 @@ class AddInventoryActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        println("${invPart.inventoryID} ${invPart.typeID} ${invPart.itemID} ${invPart.quantityInSet} ${invPart.colorID} ${invPart.extra}")
-                        if (alt == "N") myDbHelper.addInventoryPart(invPart)
+                        if (alt == "N") {
+                            myDbHelper.addInventoryPart(invPart)
+                            myDbHelper.getPicture(invPart.itemID.toString(), invPart.colorID.toString())
+                        }
                     }
                 }
                 myDbHelper.addInventory(Inventory(inventoryID.toString().toInt(), inventoryName.toString()))

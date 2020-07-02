@@ -1,19 +1,24 @@
 package com.ubi.bricklist
 
 import Inventory
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.View
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.IOException
 import java.sql.SQLException
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,10 +27,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         title = "BrickList App"
 
-        // Show all inventories
-        showInventories()
+        try { showInventories() } catch (e: Exception) {}
 
         // Click button and go to AddInventoryActivity
         val newInventoryBtn = findViewById<FloatingActionButton>(R.id.newInventoryButton)
@@ -59,10 +64,11 @@ class MainActivity : AppCompatActivity() {
             tv.layoutParams = TableRow.LayoutParams(
                 TableRow.LayoutParams.WRAP_CONTENT,
                 TableRow.LayoutParams.MATCH_PARENT)
-            tv.gravity = Gravity.LEFT
+            tv.gravity = Gravity.CENTER_VERTICAL
+            tv.height = 100
             tv.setPadding(20, 15, 20, 15)
             run {
-                tv.text = "[${row.id}] ${row.name}"
+                tv.text = "${row.name} [${row.id}]"
                 tv.setTextColor(Color.parseColor("#002C18"))
                 tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.font_size_inventory).toInt().toFloat())
             }
@@ -75,6 +81,8 @@ class MainActivity : AppCompatActivity() {
             tr.setPadding(10, 0, 10, 0)
             tr.setOnClickListener {
                 val intent = Intent(this, InventoryListActivity::class.java)
+                intent.putExtra("name", row.name)
+                intent.putExtra("id", row.id)
                 startActivity(intent)
             }
             tr.layoutParams = trParams
@@ -99,5 +107,9 @@ class MainActivity : AppCompatActivity() {
             tableInventories.addView(trSep, trParamsSep)
         }
     }
-}
 
+//    override fun onResume() {
+//        super.onResume()
+//        try { showInventories() } catch (e: Exception) {}
+//    }
+}
