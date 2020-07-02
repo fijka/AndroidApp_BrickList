@@ -18,9 +18,30 @@ class InventoryListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inventory_list)
 
-        title = intent.extras!!.getString("name")
+        val myDbHelper = MyDBHandler(this@InventoryListActivity)
+        try {
+            myDbHelper.createDataBase()
+        } catch (ioe: IOException) {
+            throw Error("Unable to create database")
+        }
+        try {
+            myDbHelper.openDataBase()
+        } catch (sqlE: SQLException) {
+            throw sqlE
+        }
 
+        title = intent.extras!!.getString("name")
         showInventoriesParts()
+
+        val deleteBtn = findViewById<Button>(R.id.deleteButton)
+        deleteBtn.setOnClickListener {
+
+        }
+
+        val exportBtn = findViewById<Button>(R.id.exportButton)
+        exportBtn.setOnClickListener {
+            // data export
+        }
     }
 
     private fun showInventoriesParts() {
@@ -98,8 +119,10 @@ class InventoryListActivity : AppCompatActivity() {
                 layCustomer.setPadding(30, 25, 15, 10)
                 layCustomer.addView(tv)
 
+                // BUTTON -
                 val buttonMinus = Button(this)
-                buttonMinus.layoutParams = TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT,
+                buttonMinus.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT,
                     TableLayout.LayoutParams.WRAP_CONTENT)
                 buttonMinus.text = "-"
                 buttonMinus.layoutParams.width = 100
@@ -111,8 +134,11 @@ class InventoryListActivity : AppCompatActivity() {
                         tv2.setTypeface(null, Typeface.NORMAL)
                     }
                 }
+
+                // BUTTON +
                 val buttonPlus = Button(this)
-                buttonPlus.layoutParams = TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT,
+                buttonPlus.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT,
                     TableLayout.LayoutParams.WRAP_CONTENT)
                 buttonPlus.text = "+"
                 buttonPlus.layoutParams.width = 100

@@ -31,7 +31,7 @@
         android:text="DELETE"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/achieveButton"
+        app:layout_constraintEnd_toStartOf="@+id/exportButton"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -41,22 +41,11 @@
         android:layout_height="50dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="15dp"
-        android:text="EXPORT"
+        android:text="EXPORT XML"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/achieveButton" />
-
-    <Button
-        android:id="@+id/achieveButton"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_marginBottom="15dp"
-        android:text="ARCHIVE"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/exportButton"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/deleteButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

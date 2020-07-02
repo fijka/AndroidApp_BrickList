@@ -2,7 +2,6 @@ package com.ubi.bricklist
 
 import Inventory
 import InventoryPart
-import android.R.attr.src
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -346,5 +345,13 @@ class MyDBHandler(private val myContext: Context) :
         cursor.close()
         db.close()
         return -1
+    }
+
+    fun archiveInventory(id: Int) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("Active", 0)
+        db.update("Inventories", values, "_id = $id", null)
+        db.close()
     }
 }

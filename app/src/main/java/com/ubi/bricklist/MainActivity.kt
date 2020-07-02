@@ -1,28 +1,23 @@
 package com.ubi.bricklist
 
 import Inventory
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.View
-import android.widget.TableLayout
-import android.widget.TableRow
-import android.widget.TextView
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.IOException
 import java.sql.SQLException
-import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
-    val active: Int = 1
+    val archive: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,19 +54,26 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 0 until rows) {
             val row: Inventory = inventories[i]
+            if (row.active == 0 && archive == 0) continue
 
             val tv = TextView(this)
             tv.layoutParams = TableRow.LayoutParams(
                 TableRow.LayoutParams.WRAP_CONTENT,
-                TableRow.LayoutParams.MATCH_PARENT)
+                TableRow.LayoutParams.WRAP_CONTENT)
             tv.gravity = Gravity.CENTER_VERTICAL
-            tv.height = 100
-            tv.setPadding(20, 15, 20, 15)
+            tv.height = 130
+            tv.width = 550
+            tv.setPadding(30, 0, 0, 0)
             run {
                 tv.text = "${row.name} [${row.id}]"
                 tv.setTextColor(Color.parseColor("#002C18"))
                 tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.font_size_inventory).toInt().toFloat())
             }
+
+            val layCustomer = LinearLayout(this)
+            layCustomer.orientation = LinearLayout.HORIZONTAL
+            layCustomer.gravity = Gravity.LEFT
+            layCustomer.addView(tv)
 
             val tr = TableRow(this)
             tr.id = i + 1
@@ -87,11 +89,43 @@ class MainActivity : AppCompatActivity() {
             }
             tr.layoutParams = trParams
             tr.setBackgroundColor(Color.parseColor("#dedede"))
-            tr.addView(tv)
+            tr.addView(layCustomer)
+
+            if (row.active == 1) {
+                val btn = Button(this)
+                btn.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.WRAP_CONTENT,
+                    TableLayout.LayoutParams.WRAP_CONTENT
+                )
+                btn.setBackgroundColor(Color.parseColor("#dedede"))
+                btn.gravity = Gravity.CENTER
+                btn.text = "✕"
+                btn.textSize = 30F
+                btn.layoutParams.width = 120
+                btn.layoutParams.height = 120
+
+                btn.setOnClickListener {
+                    val dialog = AlertDialog.Builder(this@MainActivity)
+                    dialog.setTitle("Archiving")
+                    dialog.setMessage("Do you want to archive this inventory?")
+                    dialog.setPositiveButton("Yes") { _, _ ->
+                        myDbHelper.archiveInventory(row.id)
+                    }
+                    dialog.setNegativeButton("No") { _, _ -> }
+                    dialog.show()
+                }
+                val layCustomer2 = LinearLayout(this)
+                layCustomer2.orientation = LinearLayout.HORIZONTAL
+                layCustomer2.gravity = Gravity.END
+                layCustomer2.addView(btn)
+                tr.addView(layCustomer2)
+            }
+
             tableInventories.addView(tr, trParams)
 
             val trSep = TableRow(this)
-            val trParamsSep = TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+            val trParamsSep = TableLayout.LayoutParams(
+                TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT)
             trParamsSep.setMargins(0, 0, 0, 0)
             trSep.layoutParams = trParamsSep

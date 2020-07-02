@@ -3,7 +3,6 @@ package com.ubi.bricklist
 import Inventory
 import InventoryPart
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
