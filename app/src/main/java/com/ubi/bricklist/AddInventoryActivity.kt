@@ -7,9 +7,10 @@ import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
 import android.text.Editable
-import android.widget.EditText
+import android.widget.EditText as EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -26,11 +27,15 @@ class AddInventoryActivity : AppCompatActivity() {
 
     var inventoryID: Editable? = null
     var inventoryName: Editable? = null
+    var setURL: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_inventory)
         title = "Download"
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        setURL = prefs.getString("text", "http://fcds.cs.put.poznan.pl/MyWeb/BL/").toString()
 
         inventoryID = findViewById<EditText>(R.id.inventoryIDEditText).text
         inventoryName = findViewById<EditText>(R.id.invantoryNameEditText).text
@@ -84,7 +89,7 @@ class AddInventoryActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg params: String?): String {
             try {
-                val url = URL("http://fcds.cs.put.poznan.pl/MyWeb/BL/$inventoryID.xml")
+                val url = URL("$setURL$inventoryID.xml")
                 val xmlDoc: Document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                     .parse(InputSource(url.openStream()))
                 xmlDoc.documentElement.normalize()

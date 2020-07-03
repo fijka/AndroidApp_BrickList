@@ -354,4 +354,27 @@ class MyDBHandler(private val myContext: Context) :
         db.update("Inventories", values, "_id = $id", null)
         db.close()
     }
+
+    fun checkActive(id: Int): Int {
+        val db = this.writableDatabase
+        val query = "SELECT * FROM Inventories WHERE _id = \"$id\""
+        val cursor = db.rawQuery(query, null)
+        cursor.moveToFirst()
+        return cursor.getInt(2)
+    }
+
+    fun deleteInventory(id: Int) {
+        val db = this.writableDatabase
+        db.delete("Inventories", "_id = ?", arrayOf(id.toString()))
+        db.delete("InventoriesParts", "InventoryID = ?", arrayOf(id.toString()))
+        db.close()
+    }
+
+    fun updateLastAccessed(id: Int) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("LastAccessed", Calendar.getInstance().time.time)
+        db.update("Inventories", values, "_id = $id", null)
+        db.close()
+    }
 }

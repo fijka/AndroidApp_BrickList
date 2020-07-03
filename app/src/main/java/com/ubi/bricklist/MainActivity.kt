@@ -6,9 +6,12 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.IOException
@@ -17,13 +20,16 @@ import java.sql.SQLException
 
 class MainActivity : AppCompatActivity() {
 
-    val archive: Int = 1
+    var archive: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         title = "BrickList App"
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        archive = prefs.getBoolean("switch", false)
 
         try { showInventories() } catch (e: Exception) {}
 
@@ -54,7 +60,7 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 0 until rows) {
             val row: Inventory = inventories[i]
-            if (row.active == 0 && archive == 0) continue
+            if (row.active == 0 && !archive) continue
 
             val tv = TextView(this)
             tv.layoutParams = TableRow.LayoutParams(
@@ -91,36 +97,42 @@ class MainActivity : AppCompatActivity() {
             tr.setBackgroundColor(Color.parseColor("#dedede"))
             tr.addView(layCustomer)
 
-            if (row.active == 1) {
-                val btn = Button(this)
-                btn.layoutParams = TableLayout.LayoutParams(
-                    TableLayout.LayoutParams.WRAP_CONTENT,
-                    TableLayout.LayoutParams.WRAP_CONTENT
-                )
-                btn.setBackgroundColor(Color.parseColor("#dedede"))
-                btn.gravity = Gravity.CENTER
-                btn.text = "✕"
-                btn.textSize = 30F
-                btn.layoutParams.width = 120
-                btn.layoutParams.height = 120
+            val btn = Button(this)
+            btn.layoutParams = TableLayout.LayoutParams(
+                TableLayout.LayoutParams.WRAP_CONTENT,
+                TableLayout.LayoutParams.WRAP_CONTENT
+            )
+            btn.setBackgroundColor(Color.parseColor("#dedede"))
+            btn.gravity = Gravity.CENTER
+            btn.text = "✕"
+            if (row.active == 0) btn.setTextColor(Color.parseColor("#a3a3a3"))
+            btn.textSize = 30F
+            btn.layoutParams.width = 120
+            btn.layoutParams.height = 120
 
-                btn.setOnClickListener {
+
+            btn.setOnClickListener {
+                if (row.active == 1) {
                     val dialog = AlertDialog.Builder(this@MainActivity)
                     dialog.setTitle("Archiving")
                     dialog.setMessage("Do you want to archive this inventory?")
                     dialog.setPositiveButton("Yes") { _, _ ->
                         myDbHelper.archiveInventory(row.id)
+                        onResume()
                     }
                     dialog.setNegativeButton("No") { _, _ -> }
                     dialog.show()
+                } else {
+                    Toast.makeText(this, "The inventory is already archived",
+                        Toast.LENGTH_LONG).show()
                 }
-                val layCustomer2 = LinearLayout(this)
-                layCustomer2.orientation = LinearLayout.HORIZONTAL
-                layCustomer2.gravity = Gravity.END
-                layCustomer2.addView(btn)
-                tr.addView(layCustomer2)
             }
 
+            val layCustomer2 = LinearLayout(this)
+            layCustomer2.orientation = LinearLayout.HORIZONTAL
+            layCustomer2.gravity = Gravity.END
+            layCustomer2.addView(btn)
+            tr.addView(layCustomer2)
             tableInventories.addView(tr, trParams)
 
             val trSep = TableRow(this)
@@ -142,8 +154,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        try { showInventories() } catch (e: Exception) {}
-//    }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when(item?.itemId) {
+            R.id.settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        tableInventories.removeAllViews()
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        archive = prefs.getBoolean("switch", false)
+        try { showInventories() } catch (e: Exception) {}
+    }
 }
