@@ -10,9 +10,19 @@ import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_inventory_list.*
+import org.w3c.dom.Document
+import org.w3c.dom.Element
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.IOException
 import java.sql.SQLException
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Transformer
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 class InventoryListActivity : AppCompatActivity() {
 
@@ -52,15 +62,26 @@ class InventoryListActivity : AppCompatActivity() {
             dialog.show()
         }
 
+        val inventoriesParts = myDbHelper.findInventoriesParts(intent.extras!!.getInt("id"))
+
         val exportBtn = findViewById<Button>(R.id.exportButton)
         exportBtn.setOnClickListener {
-            // data export
+            val dialog = AlertDialog.Builder(this@InventoryListActivity)
+            dialog.setTitle("Export")
+            dialog.setMessage("What bricks do you prefer?")
+            dialog.setPositiveButton("Only new") { _, _ ->
+                writeXML(inventoriesParts, "N")
+            }
+            dialog.setNegativeButton("Doesn't matter") { _, _ ->
+                writeXML(inventoriesParts, "U")
+            }
+            dialog.show()
         }
 
-        showInventoriesParts()
+        showInventoriesParts(inventoriesParts)
     }
 
-    private fun showInventoriesParts() {
+    private fun showInventoriesParts(inventoriesParts: MutableList<InventoryPart>) {
         val myDbHelper = MyDBHandler(this@InventoryListActivity)
         try {
             myDbHelper.createDataBase()
@@ -73,7 +94,7 @@ class InventoryListActivity : AppCompatActivity() {
             throw sqlE
         }
 
-        val inventoriesParts = myDbHelper.findInventoriesParts(intent.extras!!.getInt("id"))
+
         var rows = 0
         rows = inventoriesParts.count()
 
@@ -120,7 +141,7 @@ class InventoryListActivity : AppCompatActivity() {
                     TableLayout.LayoutParams.WRAP_CONTENT
                 )
                 run {
-                    tv2.text = "   ${row.quantityInStore} of ${row.quantityInSet}"
+                    tv2.text = "  ${row.quantityInStore} of ${row.quantityInSet}"
                     tv2.textSize = 17F
                     if (row.quantityInSet == row.quantityInStore) {
                         if (myDbHelper.checkActive(intent.extras!!.getInt("id")) == 1)
@@ -156,7 +177,7 @@ class InventoryListActivity : AppCompatActivity() {
                     buttonMinus.layoutParams.width = 100
                     buttonMinus.setOnClickListener {
                         val new = myDbHelper.updateQuantity(row.id, -1)
-                        if (new != -1) tv2.text = "   $new of ${row.quantityInSet}"
+                        if (new != -1) tv2.text = "  $new of ${row.quantityInSet}"
                         if (row.quantityInSet != new) {
                             if (myDbHelper.checkActive(intent.extras!!.getInt("id")) == 1)
                                 tv2.setTextColor(Color.parseColor("#f7876a"))
@@ -175,7 +196,7 @@ class InventoryListActivity : AppCompatActivity() {
                     buttonPlus.layoutParams.width = 100
                     buttonPlus.setOnClickListener {
                         val new = myDbHelper.updateQuantity(row.id, 1)
-                        if (new != -1) tv2.text = "   $new of ${row.quantityInSet}"
+                        if (new != -1) tv2.text = "  $new of ${row.quantityInSet}"
                         if (row.quantityInSet == new) {
                             if (myDbHelper.checkActive(intent.extras!!.getInt("id")) == 1)
                                 tv2.setTextColor(Color.parseColor("#3e8a40"))
@@ -203,5 +224,63 @@ class InventoryListActivity : AppCompatActivity() {
                 inventoriesPartsTable.addView(tr, trParams)
             }
         }
+    }
+
+    private fun writeXML(list: MutableList<InventoryPart>, new: String) {
+        val docBuilder: DocumentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val doc: Document = docBuilder.newDocument()
+
+        val myDbHelper = MyDBHandler(this@InventoryListActivity)
+        try {
+            myDbHelper.createDataBase()
+        } catch (ioe: IOException) {
+            throw Error("Unable to create database")
+        }
+        try {
+            myDbHelper.openDataBase()
+        } catch (sqlE: SQLException) {
+            throw sqlE
+        }
+
+        val rootElement: Element = doc.createElement("INVENTORY")
+
+        for (i in 0 until list.count()) {
+
+            val item: Element = doc.createElement("ITEM")
+
+            val itemType: Element = doc.createElement("ITEMTYPE")
+            itemType.appendChild(doc.createTextNode(list[i].typeID))
+            item.appendChild(itemType)
+
+            val itemID: Element = doc.createElement("ITEMID")
+            itemID.appendChild(doc.createTextNode(list[i].itemID))
+            item.appendChild(itemID)
+
+            val color: Element = doc.createElement("COLOR")
+            color.appendChild(doc.createTextNode(list[i].colorID))
+            item.appendChild(color)
+
+            val qtyFilled: Element = doc.createElement("QTYFILLED")
+            qtyFilled.appendChild(doc.createTextNode(myDbHelper.getQuantity(list[i].id).toString()))
+            item.appendChild(qtyFilled)
+
+            val condition: Element = doc.createElement("CONDITION")
+            condition.appendChild(doc.createTextNode(new))
+            item.appendChild(condition)
+
+            rootElement.appendChild(item)
+        }
+
+        val transformer: Transformer = TransformerFactory.newInstance().newTransformer()
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+
+        val path = this.filesDir
+        val outDir = File(path, "Output")
+        outDir.mkdir()
+
+        val file = File(outDir, "${intent.extras!!.getString("name")}.xml")
+
+        transformer.transform(DOMSource(doc), StreamResult(file))
     }
 }

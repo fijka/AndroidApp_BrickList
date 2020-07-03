@@ -377,4 +377,15 @@ class MyDBHandler(private val myContext: Context) :
         db.update("Inventories", values, "_id = $id", null)
         db.close()
     }
+
+    fun getQuantity(id: Int): Int {
+        val db = this.writableDatabase
+        val query = "SELECT * FROM InventoriesParts WHERE _id = $id"
+        val cursor = db.rawQuery(query, null)
+        cursor.moveToFirst()
+        val quantity = cursor.getInt(4) - cursor.getInt(5)
+        cursor.close()
+        db.close()
+        return quantity
+    }
 }

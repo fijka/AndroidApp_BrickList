@@ -5,6 +5,7 @@
         android:key="text"
         android:title="Prefix of URL"
         android:defaultValue="http://fcds.cs.put.poznan.pl/MyWeb/BL/"
+        android:summary="http://fcds.cs.put.poznan.pl/MyWeb/BL/"
         app:useSimpleSummaryProvider="true"
         />
     <SwitchPreference

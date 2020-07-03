@@ -20,7 +20,7 @@ import java.sql.SQLException
 
 class MainActivity : AppCompatActivity() {
 
-    var archive: Boolean = false
+    private var archive: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

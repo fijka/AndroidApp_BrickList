@@ -47,13 +47,9 @@ class AddInventoryActivity : AppCompatActivity() {
 
             if (inventoryID.toString().trim().isNotEmpty() && inventoryName.toString().trim().isNotEmpty()) {
                 if (!myDbHelper.inventoryExist(inventoryID.toString().toInt())) {
-                    // Download an inventory and add the set to the database
-//                    val progressDialog = ProgressDialog.show(
-//                        this@AddInventoryActivity, "",
-//                        "Downloading. Please wait...", true
-//                    )
+
                     InventoryDownloader().execute()
-//                    progressDialog.dismiss()
+
                     Toast.makeText(this, "The $inventoryID is now available",
                         Toast.LENGTH_LONG).show()
                     val intent = Intent(this, MainActivity::class.java)
