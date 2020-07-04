@@ -52,17 +52,17 @@ class AddInventoryActivity : AppCompatActivity() {
             if (inventoryID.toString().trim().isNotEmpty() && inventoryName.toString().trim().isNotEmpty()) {
                 if (!myDbHelper.inventoryExist(inventoryID.toString().toInt())) {
 
-                    InventoryDownloader().execute()
-
                     val progressDialog = ProgressDialog(this)
                     progressDialog.setMessage("Downloading...")
                     progressDialog.setCancelable(false)
                     progressDialog.show()
 
+                    InventoryDownloader().execute()
+
                     while (tmp) {}
                     tmp = true
 
-//                    progressDialog.dismiss()
+                    progressDialog.dismiss()
 
                     if (ok) {
                         ok = false
