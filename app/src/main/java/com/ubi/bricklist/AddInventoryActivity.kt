@@ -3,6 +3,7 @@ package com.ubi.bricklist
 import Inventory
 import InventoryPart
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
@@ -29,6 +30,9 @@ class AddInventoryActivity : AppCompatActivity() {
     var inventoryName: Editable? = null
     var setURL: String = ""
 
+    var ok = false
+    var tmp = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_inventory)
@@ -50,10 +54,30 @@ class AddInventoryActivity : AppCompatActivity() {
 
                     InventoryDownloader().execute()
 
-                    Toast.makeText(this, "The $inventoryID is now available",
-                        Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+                    val progressDialog = ProgressDialog(this)
+                    progressDialog.setMessage("Downloading...")
+                    progressDialog.setCancelable(false)
+                    progressDialog.show()
+
+                    while (tmp) {}
+                    tmp = true
+
+//                    progressDialog.dismiss()
+
+                    if (ok) {
+                        ok = false
+                        Toast.makeText(
+                            this, "The $inventoryID is now available",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(
+                            this, "The $inventoryID is not available",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 } else {
                     Toast.makeText(this, "The $inventoryID inventory already exists",
                         Toast.LENGTH_LONG).show()
@@ -123,9 +147,13 @@ class AddInventoryActivity : AppCompatActivity() {
                     }
                 }
                 myDbHelper.addInventory(Inventory(inventoryID.toString().toInt(), inventoryName.toString()))
+
             } catch (e: IOException) {
+                tmp = false
                 return "IO Exception"
             }
+            tmp = false
+            ok = true
             return "success"
         }
     }

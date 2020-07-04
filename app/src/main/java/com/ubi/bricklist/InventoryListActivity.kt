@@ -7,14 +7,13 @@ import android.graphics.Color
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import kotlinx.android.synthetic.main.activity_inventory_list.*
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.IOException
+import java.io.*
 import java.sql.SQLException
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -270,17 +269,32 @@ class InventoryListActivity : AppCompatActivity() {
 
             rootElement.appendChild(item)
         }
+        doc.appendChild(rootElement)
 
         val transformer: Transformer = TransformerFactory.newInstance().newTransformer()
         transformer.setOutputProperty(OutputKeys.INDENT, "yes")
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
 
-        val path = this.filesDir
-        val outDir = File(path, "Output")
-        outDir.mkdir()
+        val sw = StringWriter()
+        transformer.transform(DOMSource(doc), StreamResult(sw))
 
-        val file = File(outDir, "${intent.extras!!.getString("name")}.xml")
+        if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()) {
+            val file = File(
+                Environment.getExternalStorageDirectory(),
+                "${intent.extras!!.getString("name")}.xml"
+            )
 
-        transformer.transform(DOMSource(doc), StreamResult(file))
+            try {
+                val fos = FileOutputStream(file)
+                fos.write(sw.toString().toByteArray())
+                fos.close()
+                Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show()
+            } catch (e: IOException) {
+            }
+        } else {
+            Toast.makeText(this, "Something went wrong", Toast.LENGTH_SHORT).show()
+        }
+        transformer.transform(DOMSource(doc), StreamResult(System.out))
+
     }
 }

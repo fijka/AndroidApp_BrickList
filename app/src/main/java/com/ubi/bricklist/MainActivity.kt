@@ -1,6 +1,7 @@
 package com.ubi.bricklist
 
 import Inventory
+import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -88,6 +89,11 @@ class MainActivity : AppCompatActivity() {
                 TableLayout.LayoutParams.MATCH_PARENT)
             tr.setPadding(10, 0, 10, 0)
             tr.setOnClickListener {
+//                val progressDialog = ProgressDialog(this)
+//                progressDialog.setMessage("Loading...")
+//                progressDialog.setCancelable(false)
+//                progressDialog.show()
+
                 val intent = Intent(this, InventoryListActivity::class.java)
                 intent.putExtra("name", row.name)
                 intent.putExtra("id", row.id)
